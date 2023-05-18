@@ -11,8 +11,6 @@ import RxSwift
 
 class WeatherViewModel: ViewModelType {
     
-    let service : Service
-
     struct Input {
         
     }
@@ -23,9 +21,7 @@ class WeatherViewModel: ViewModelType {
     var input: Input
     var output: Output
     
-    init(service: Service) {
-        self.service = service
-        
+    init() {        
         self.input = Input()
         self.output = Output()
     }
@@ -40,30 +36,30 @@ class WeatherViewModel: ViewModelType {
     }
     var conditionImageView: UIImage?
     
-    func reload() {
-        service.fetchNow { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let model):
-                self.temperatureString = model.tempString
-                self.cityName = model.cityName
-                self.conditionImageView = UIImage(systemName: model.conditionName)
-                
-            case .failure(let error):
-                print(error.localizedDescription)
-                break
-            }
-        }
-    }
-    
-    func fetchWeather(cityName: String) {
-        service.fetchWeather(cityName: cityName)
-        reload()
-    }
-    
-    func fetchWeather(latitude: String, lognitude: String) {
-        service.fetchWeather(latitude: latitude, lognitude: lognitude)
-        reload()
-    }
+//    func reload() {
+//        service.fetchNow { [weak self] result in
+//            guard let self = self else { return }
+//            switch result {
+//            case .success(let model):
+//                self.temperatureString = model.tempString
+//                self.cityName = model.cityName
+//                self.conditionImageView = UIImage(systemName: model.conditionName)
+//                
+//            case .failure(let error):
+//                print(error.localizedDescription)
+//                break
+//            }
+//        }
+//    }
+//    
+//    func fetchWeather(cityName: String) {
+//        service.fetchWeather(cityName: cityName)
+//        reload()
+//    }
+//    
+//    func fetchWeather(latitude: String, lognitude: String) {
+//        service.fetchWeather(latitude: latitude, lognitude: lognitude)
+//        reload()
+//    }
     
 }

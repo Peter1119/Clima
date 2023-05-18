@@ -7,3 +7,9 @@
 //
 
 import Foundation
+
+import RxSwift
+
+protocol WeatherDataSourceProtocol {
+    func fetch(_ requestMethod: WeatherRequestMethod) -> Observable<WeatherTotalDTO>
+}

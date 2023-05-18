@@ -116,7 +116,7 @@ extension WeatherViewController : CLLocationManagerDelegate {
         let lat = location.coordinate.latitude
         let lon = location.coordinate.longitude
         
-        viewModel.fetchWeather(latitude: "\(lat)", lognitude: "\(lon)")
+//        viewModel.fetchWeather(latitude: "\(lat)", lognitude: "\(lon)")
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
