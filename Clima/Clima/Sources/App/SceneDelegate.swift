@@ -25,7 +25,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let service = Service(repository: repo)
         
         let className = "WeatherViewController"
-        var weatherVC = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(withIdentifier: className) as! WeatherViewController
+        var weatherVC = WeatherViewController()
         weatherVC.bind(viewModel: WeatherViewModel(service: service))
         window?.rootViewController = weatherVC
         
