@@ -7,3 +7,15 @@
 //
 
 import Foundation
+
+import RxSwift
+
+struct WeatherRepository: WeatherRepositoryProtocol {
+
+    var weatherDataSource: WeatherDataSourceProtocol?
+    
+    func fetch(_ requestMethod: WeatherRequestMethod) -> Observable<Weather> {
+        return weatherDataSource?.fetch(requestMethod)
+            .map { $0.toDomain() } ?? .empty()
+    }
+}
