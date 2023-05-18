@@ -27,5 +27,5 @@ enum Network {
         }
     }
     
-    static let baseURLString: String = "https://api.openweathermap.org/data/2.5/weather&units=metric"
+    static let baseURLString: String = "https://api.openweathermap.org/data/2.5/weather?units=metric"
 }

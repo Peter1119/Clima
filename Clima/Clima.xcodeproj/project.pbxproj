@@ -25,6 +25,7 @@
 		35C5F6CA2A15C97400FD540D /* WeatherResponseDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C5F6C92A15C97400FD540D /* WeatherResponseDTO.swift */; };
 		35C5F6CC2A15F4AE00FD540D /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C5F6CB2A15F4AE00FD540D /* Network.swift */; };
 		35C5F6CF2A15F56F00FD540D /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 35C5F6CE2A15F56F00FD540D /* Alamofire */; };
+		35C5F6D72A16080000FD540D /* ClimaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C5F6D62A16080000FD540D /* ClimaTests.swift */; };
 		ADAA27B1231BBFAF00365194 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADAA27B0231BBFAF00365194 /* AppDelegate.swift */; };
 		ADAA27B3231BBFAF00365194 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADAA27B2231BBFAF00365194 /* SceneDelegate.swift */; };
 		ADAA27B5231BBFAF00365194 /* WeatherViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADAA27B4231BBFAF00365194 /* WeatherViewController.swift */; };
@@ -32,6 +33,16 @@
 		ADAA27BA231BBFB300365194 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ADAA27B9231BBFB300365194 /* Assets.xcassets */; };
 		ADAA27BD231BBFB300365194 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = ADAA27BB231BBFB300365194 /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		35C5F6D82A16080000FD540D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ADAA27A5231BBFAF00365194 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ADAA27AC231BBFAF00365194;
+			remoteInfo = Clima;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		3502AF8B26EC963B00E47223 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
@@ -47,6 +58,8 @@
 		35C5F6C02A15C76A00FD540D /* WeatherRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherRepositoryProtocol.swift; sourceTree = "<group>"; };
 		35C5F6C92A15C97400FD540D /* WeatherResponseDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherResponseDTO.swift; sourceTree = "<group>"; };
 		35C5F6CB2A15F4AE00FD540D /* Network.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
+		35C5F6D42A16080000FD540D /* ClimaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ClimaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		35C5F6D62A16080000FD540D /* ClimaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClimaTests.swift; sourceTree = "<group>"; };
 		ADAA27AD231BBFAF00365194 /* Clima.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clima.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ADAA27B0231BBFAF00365194 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		ADAA27B2231BBFAF00365194 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -58,6 +71,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		35C5F6D12A16080000FD540D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		ADAA27AA231BBFAF00365194 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -247,10 +267,19 @@
 			path = ViewModel;
 			sourceTree = "<group>";
 		};
+		35C5F6D52A16080000FD540D /* ClimaTests */ = {
+			isa = PBXGroup;
+			children = (
+				35C5F6D62A16080000FD540D /* ClimaTests.swift */,
+			);
+			path = ClimaTests;
+			sourceTree = "<group>";
+		};
 		ADAA27A4231BBFAF00365194 = {
 			isa = PBXGroup;
 			children = (
 				ADAA27AF231BBFAF00365194 /* Clima */,
+				35C5F6D52A16080000FD540D /* ClimaTests */,
 				ADAA27AE231BBFAF00365194 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -259,6 +288,7 @@
 			isa = PBXGroup;
 			children = (
 				ADAA27AD231BBFAF00365194 /* Clima.app */,
+				35C5F6D42A16080000FD540D /* ClimaTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -287,6 +317,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		35C5F6D32A16080000FD540D /* ClimaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 35C5F6DA2A16080000FD540D /* Build configuration list for PBXNativeTarget "ClimaTests" */;
+			buildPhases = (
+				35C5F6D02A16080000FD540D /* Sources */,
+				35C5F6D12A16080000FD540D /* Frameworks */,
+				35C5F6D22A16080000FD540D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				35C5F6D92A16080000FD540D /* PBXTargetDependency */,
+			);
+			name = ClimaTests;
+			productName = ClimaTests;
+			productReference = 35C5F6D42A16080000FD540D /* ClimaTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		ADAA27AC231BBFAF00365194 /* Clima */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = ADAA27C1231BBFB300365194 /* Build configuration list for PBXNativeTarget "Clima" */;
@@ -317,10 +365,14 @@
 		ADAA27A5231BBFAF00365194 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1100;
+				LastSwiftUpdateCheck = 1410;
 				LastUpgradeCheck = 1100;
 				ORGANIZATIONNAME = "App Brewery";
 				TargetAttributes = {
+					35C5F6D32A16080000FD540D = {
+						CreatedOnToolsVersion = 14.1;
+						TestTargetID = ADAA27AC231BBFAF00365194;
+					};
 					ADAA27AC231BBFAF00365194 = {
 						CreatedOnToolsVersion = 11.0;
 					};
@@ -345,11 +397,19 @@
 			projectRoot = "";
 			targets = (
 				ADAA27AC231BBFAF00365194 /* Clima */,
+				35C5F6D32A16080000FD540D /* ClimaTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		35C5F6D22A16080000FD540D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		ADAA27AB231BBFAF00365194 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -364,6 +424,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		35C5F6D02A16080000FD540D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				35C5F6D72A16080000FD540D /* ClimaTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		ADAA27A9231BBFAF00365194 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -388,6 +456,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		35C5F6D92A16080000FD540D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ADAA27AC231BBFAF00365194 /* Clima */;
+			targetProxy = 35C5F6D82A16080000FD540D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
 		ADAA27B6231BBFAF00365194 /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
@@ -408,6 +484,54 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		35C5F6DB2A16080000FD540D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 96H5TT55S4;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = peter.ClimaTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Clima.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Clima";
+			};
+			name = Debug;
+		};
+		35C5F6DC2A16080000FD540D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 96H5TT55S4;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = peter.ClimaTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Clima.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Clima";
+			};
+			name = Release;
+		};
 		ADAA27BF231BBFB300365194 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -559,6 +683,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		35C5F6DA2A16080000FD540D /* Build configuration list for PBXNativeTarget "ClimaTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				35C5F6DB2A16080000FD540D /* Debug */,
+				35C5F6DC2A16080000FD540D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		ADAA27A8231BBFAF00365194 /* Build configuration list for PBXProject "Clima" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
