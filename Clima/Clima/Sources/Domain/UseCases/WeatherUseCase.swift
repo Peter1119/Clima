@@ -7,3 +7,15 @@
 //
 
 import Foundation
+import RxSwift
+
+struct WeatherUseCase: WeatherUseCaseProtocol {
+    
+    var weatherRepository: WeatherRepositoryProtocol?
+    private var disposeBag = DisposeBag()
+    
+    func weather(_ input: WeatherRequestMethod) -> Observable<Weather> {
+        return weatherRepository?.fetch(input) ?? .empty()
+    }
+    
+}

@@ -7,3 +7,8 @@
 //
 
 import Foundation
+import RxSwift
+
+protocol WeatherUseCaseProtocol {
+    func weather(_ input: WeatherRequestMethod) -> Observable<Weather>
+}
