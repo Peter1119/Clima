@@ -27,6 +27,5 @@ extension WeatherRequestMethod {
     }
 }
 protocol WeatherRepositoryProtocol {
-    // fetch는 여러 번 호출하기 때문에 single보다는 Observable이 더 맞는거 아닌가 ?
     func fetch(_ requestMethod: WeatherRequestMethod) -> Observable<Weather>
 }
