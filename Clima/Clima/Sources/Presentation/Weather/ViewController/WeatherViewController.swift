@@ -8,6 +8,8 @@
 
 import UIKit
 import CoreLocation
+import RxSwift
+import RxCocoa
 
 class WeatherViewController: UIViewController, ViewModelBindable {
     
@@ -48,7 +50,18 @@ class WeatherViewController: UIViewController, ViewModelBindable {
     }
     
     func bindViewModel() {
-
+        
+        viewModel.output.cityName
+            .drive(cityLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        viewModel.output.conditionImage
+            .drive(conditionImageView.rx.image)
+            .disposed(by: disposeBag)
+        
+        viewModel.output.temperature
+            .drive(temperatureLabel.rx.text)
+            .disposed(by: disposeBag)
     }
 }
 
@@ -62,6 +75,7 @@ extension WeatherViewController : CLLocationManagerDelegate {
         let latString = "\(location.coordinate.latitude)"
         let lonString = "\(location.coordinate.longitude)"
         
+        viewModel.input.requestWeatherByCoordinator.accept((latString, lonString))
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {

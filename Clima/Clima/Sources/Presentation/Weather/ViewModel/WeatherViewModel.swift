@@ -38,6 +38,7 @@ class WeatherViewModel: ViewModelType {
                 .map { WeatherRequestMethod.coordinate(lat: $0.0, lon: $0.1) }
             )
         .withUnretained(self)
+        .skip(1)
         .flatMap { viewModel, request in
             viewModel.weatherUseCase?.weather(request).asResult() ?? .empty()
         }.share()
@@ -67,6 +68,13 @@ class WeatherViewModel: ViewModelType {
             .bind(to: conditionImage)
             .disposed(by: disposeBag)
             
+        weather
+            .bind {
+                print("@@@@@@@@@@@@@@@@")
+                print($0)
+                print("@@@@@@@@@@@@@@@@")
+            }
+            .disposed(by: disposeBag)
         
         
         return Output(
