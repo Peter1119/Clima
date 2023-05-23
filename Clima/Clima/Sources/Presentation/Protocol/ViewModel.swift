@@ -7,13 +7,14 @@
 //
 
 import UIKit
+import RxSwift
 
 protocol ViewModelType {
     associatedtype Input
     associatedtype Output
-    
-    var input: Input { get }
-    var output: Output { get }
+
+    var disposeBag: DisposeBag { get set }
+    func transform(_ input: Input) -> Output
 }
 
 protocol ViewModelBindable {
@@ -30,14 +31,4 @@ extension ViewModelBindable where Self: UIViewController {
         loadViewIfNeeded()
         bindViewModel()
     }
-}
-
-protocol FetchAble {
-    associatedtype ClassType
-    associatedtype CustomeError: Error
-    func fetchNow(onCompleted: @escaping (Result<ClassType, CustomeError>) -> Void)
-    
-    func fetchWeather(cityName: String)
-    
-    func fetchWeather(latitude: String, lognitude: String)
 }
