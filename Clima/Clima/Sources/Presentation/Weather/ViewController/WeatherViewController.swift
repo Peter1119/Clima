@@ -12,6 +12,7 @@ import CoreLocation
 class WeatherViewController: UIViewController, ViewModelBindable {
     
     var viewModel : WeatherViewModel!
+    var disposeBag: DisposeBag = .init()
     
     private var conditionImageView: UIImageView = {
         let imageView = UIImageView()
@@ -51,63 +52,16 @@ class WeatherViewController: UIViewController, ViewModelBindable {
     }
 }
 
-// MARK: - UITextFieldDelagate
+// MARK: - CLLocationManagerDelegate
 
-//extension WeatherViewController: UITextFieldDelegate {
-//    @IBAction func searchPressed(_ sender: UIButton) {
-//        searchTextField.endEditing(true)
-//        print(searchTextField.text!)
-//    }
-//
-//    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-//        searchTextField.endEditing(true)
-//        print(searchTextField.text!)
-//        return true
-//    }
-//
-//    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-//        if textField.text != "" {
-//            return true
-//        } else {
-//            textField.placeholder = "Type somegthing"
-//            return false
-//        }
-//    }
-//
-//    func textFieldDidEndEditing(_ textField: UITextField) {
-//        if let city = searchTextField.text {
-//            viewModel.fetchWeather(cityName: city)
-//        }
-//        searchTextField.text = ""
-//    }
-//}
-//
-//// MARK: - WeatherManagerDelegate
-//
-//extension WeatherViewController: WeatherManagerDelegate {
-//    @IBAction func fetchCurrentLocationWeatherPressed(_ sender: UIButton) {
-//        locationManager.requestLocation()
-//    }
-//
-//    func didUpdateWeather(_ weather: WeatherModel) {
-//    }
-//
-//    func didFailWithError(error: Error) {
-//        print(error)
-//    }
-//}
-//
-//// MARK: - CLLocationManagerDelegate
-//
 extension WeatherViewController : CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         locationManager.stopUpdatingLocation()
-        let lat = location.coordinate.latitude
-        let lon = location.coordinate.longitude
+        let latString = "\(location.coordinate.latitude)"
+        let lonString = "\(location.coordinate.longitude)"
         
-//        viewModel.fetchWeather(latitude: "\(lat)", lognitude: "\(lon)")
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {

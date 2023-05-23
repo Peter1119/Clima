@@ -21,6 +21,7 @@ protocol ViewModelBindable {
     associatedtype ViewModelType
     
     var viewModel: ViewModelType! { get set }
+    var disposeBag: DisposeBag { get set }
     
     func bindViewModel()
 }
