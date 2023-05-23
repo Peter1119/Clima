@@ -8,58 +8,74 @@
 
 import UIKit
 import RxSwift
+import RxCocoa
 
 class WeatherViewModel: ViewModelType {
     
     struct Input {
-        
+        let requestWeatherByCoordinator = PublishRelay<(String, String)>()
+        let requestWeatherByText = PublishRelay<String>()
     }
     struct Output {
+        let conditionImage: Driver<UIImage?>
+        let temperature: Driver<String>
+        let cityName: Driver<String>
+    }
+
+    var weatherUseCase: WeatherUseCaseProtocol?
+    var disposeBag: DisposeBag = .init()
+    private let weather = BehaviorRelay<Weather?>(value: nil)
+    
+    func transform(_ input: Input) -> Output {
+        let conditionImage = BehaviorRelay<UIImage?>(value: nil)
+        let temperature = BehaviorRelay<String>(value: String())
+        let cityName = BehaviorRelay<String>(value: String())
         
+        let requestWeather = Observable.merge(
+            input.requestWeatherByText
+                .map { WeatherRequestMethod.text($0) },
+            input.requestWeatherByCoordinator
+                .map { WeatherRequestMethod.coordinate(lat: $0.0, lon: $0.1) }
+            )
+        .withUnretained(self)
+        .flatMap { viewModel, request in
+            viewModel.weatherUseCase?.weather(request).asResult() ?? .empty()
+        }.share()
+        
+        requestWeather
+            .compactMap { result -> Weather? in
+                guard case let .success(weather) = result else { return nil }
+                return weather
+            }
+            .bind(to: weather)
+            .disposed(by: disposeBag)
+        
+        weather
+            .compactMap(\.?.cityName)
+            .bind(to: cityName)
+            .disposed(by: disposeBag)
+        
+        weather
+            .compactMap(\.?.temperature)
+            .map { String(format: "%.1f", $0) }
+            .bind(to: temperature)
+            .disposed(by: disposeBag)
+        
+        weather
+            .compactMap(\.?.conditionName)
+            .map { UIImage(named: $0) }
+            .bind(to: conditionImage)
+            .disposed(by: disposeBag)
+            
+        
+        
+        return Output(
+            conditionImage: conditionImage.asDriver(),
+            temperature: temperature.asDriver(),
+            cityName: cityName.asDriver()
+        )
     }
     
-    var input: Input
-    var output: Output
-    
-    init() {        
-        self.input = Input()
-        self.output = Output()
-    }
-    
-    var onUpdate: () -> Void = {}
-    
-    var temperatureString: String?
-    var cityName: String? {
-        didSet {
-            onUpdate()
-        }
-    }
-    var conditionImageView: UIImage?
-    
-//    func reload() {
-//        service.fetchNow { [weak self] result in
-//            guard let self = self else { return }
-//            switch result {
-//            case .success(let model):
-//                self.temperatureString = model.tempString
-//                self.cityName = model.cityName
-//                self.conditionImageView = UIImage(systemName: model.conditionName)
-//                
-//            case .failure(let error):
-//                print(error.localizedDescription)
-//                break
-//            }
-//        }
-//    }
-//    
-//    func fetchWeather(cityName: String) {
-//        service.fetchWeather(cityName: cityName)
-//        reload()
-//    }
-//    
-//    func fetchWeather(latitude: String, lognitude: String) {
-//        service.fetchWeather(latitude: latitude, lognitude: lognitude)
-//        reload()
-//    }
-    
+    let input = Input()
+    lazy var output = transform(input)
 }
