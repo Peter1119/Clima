@@ -13,7 +13,7 @@ import Alamofire
 
 struct WeatherDataSource: WeatherDataSourceProtocol {
     
-    var baseURL = Network.baseURLString + "&appid=\(Network.appID)"
+    private var baseURL = Network.baseURLString + "&appid=\(Network.appID)"
     
     func fetch(_ requestMethod: WeatherRequestMethod) -> Observable<WeatherTotalDTO> {
             return Observable<WeatherTotalDTO>.create { observer -> Disposable in
