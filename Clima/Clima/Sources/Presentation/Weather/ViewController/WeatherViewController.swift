@@ -39,24 +39,15 @@ class WeatherViewController: UIViewController, ViewModelBindable {
         super.viewDidLoad()
         
         self.view.backgroundColor = .yellow
-        //        viewModel.onUpdate = { [weak self] in
-        //            DispatchQueue.main.async {
-        //                self?.cityLabel.text = self?.viewModel.cityName
-        //                self?.conditionImageView.image = self?.viewModel.conditionImageView
-        //                self?.temperatureLabel.text = self?.viewModel.temperatureString
-        //            }
-        //        }
-        
+
         locationManager.delegate = self
-        //        searchTextField.delegate = self
         
         locationManager.requestWhenInUseAuthorization()
         locationManager.requestLocation()
     }
     
     func bindViewModel() {
-        //        let _ = viewModel.output
-        //        let _ = viewModel.input
+
     }
 }
 
