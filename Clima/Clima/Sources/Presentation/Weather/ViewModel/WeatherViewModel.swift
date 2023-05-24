@@ -24,6 +24,8 @@ final class WeatherViewModel: NSObject, ViewModelType {
         let temperature: Driver<String>
         let cityName: Driver<String>
         let showMoveToSettingAlert: Driver<Void>
+        let showLoadingView: Driver<Void>
+        let dismissLoadingView: Driver<Void>
     }
     
     var weatherUseCase: WeatherUseCaseProtocol?
@@ -52,18 +54,33 @@ final class WeatherViewModel: NSObject, ViewModelType {
             .withUnretained(self)
             .bind { viewModel, _ in
                 viewModel.locationManager.requestWhenInUseAuthorization()
+                viewModel.locationManager.requestLocation()
             }
             .disposed(by: disposeBag)
         
-        Observable.merge(
+        let viewWillAppearSuccess = Observable.zip(
             input.viewWillAppear.asObservable(),
-            input.requestCoordinatorButtonTap.asObservable()
+            requestWeatherByCoordinator.asObservable()
         )
-        .withUnretained(self)
-        .bind { viewModel, _ in
-            viewModel.locationManager.requestLocation()
-        }
-        .disposed(by: disposeBag)
+            .map { _, coordinator -> WeatherRequestMethod in
+                return WeatherRequestMethod.coordinate(lat: coordinator.0, lon: coordinator.1)
+            }
+            .withUnretained(self)
+            .flatMap { viewModel, request in
+                viewModel.weatherUseCase?.weather(request).asResult() ?? .empty()
+            }
+            .compactMap { result -> Weather? in
+                guard case let .success(weather) = result else { return nil }
+                return weather
+            }
+            .share()
+        
+        input.requestCoordinatorButtonTap
+            .withUnretained(self)
+            .bind { viewModel, _ in
+                viewModel.locationManager.requestLocation()
+            }
+            .disposed(by: disposeBag)
         
         let authorizationIsDenied = Observable.merge(
             input.requestWeatherByText.map { _ in () }.asObservable(),
@@ -91,13 +108,19 @@ final class WeatherViewModel: NSObject, ViewModelType {
             }
             .share()
         
-        requestWeather
+        let requestWeatherSuccess = requestWeather
             .compactMap { result -> Weather? in
                 guard case let .success(weather) = result else { return nil }
                 return weather
             }
-            .bind(to: weather)
-            .disposed(by: disposeBag)
+            .share()
+        
+        Observable.merge(
+            viewWillAppearSuccess,
+            requestWeatherSuccess
+        )
+        .bind(to: weather)
+        .disposed(by: disposeBag)
         
         weather
             .compactMap(\.?.cityName)
@@ -116,6 +139,18 @@ final class WeatherViewModel: NSObject, ViewModelType {
             .bind(to: conditionImage)
             .disposed(by: disposeBag)
         
+        // LoadingView
+        let showLoadingView = Observable.merge(
+            input.viewWillAppear.asObservable(),
+            input.requestCoordinatorButtonTap.asObservable(),
+            input.requestWeatherByText.map { _ in () }.asObservable()
+        )
+        
+        let dismissLoadingView = Observable.merge(
+            viewWillAppearSuccess,
+            requestWeatherSuccess
+        ).map { _ in () }
+        
         return Output(
             conditionImage: conditionImage.asDriver { _ in  .empty() },
             temperature: temperature.asDriver { _ in  .empty() },
@@ -123,7 +158,9 @@ final class WeatherViewModel: NSObject, ViewModelType {
             showMoveToSettingAlert: authorizationIsDenied
                 .filter { $0 == true }
                 .map { _ in () }
-                .asDriver(onErrorJustReturn: ())
+                .asDriver(onErrorJustReturn: ()),
+            showLoadingView: showLoadingView.asDriver(onErrorJustReturn: ()),
+            dismissLoadingView: dismissLoadingView.asDriver(onErrorJustReturn: ())
         )
     }
     
