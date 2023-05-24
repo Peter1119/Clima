@@ -9,39 +9,77 @@
 import UIKit
 import RxSwift
 import RxCocoa
+import CoreLocation
 
-class WeatherViewModel: ViewModelType {
+
+final class WeatherViewModel: NSObject, ViewModelType {
     
     struct Input {
-        let requestWeatherByCoordinator = PublishRelay<(String, String)>()
+        let viewWillAppear = PublishRelay<Void>()
+        let requestCoordinatorButtonTap = PublishRelay<Void>()
         let requestWeatherByText = PublishRelay<String>()
     }
     struct Output {
-        let conditionImage: Driver<UIImage?>
+        let conditionImage: Driver<UIImage>
         let temperature: Driver<String>
         let cityName: Driver<String>
     }
-
+    
     var weatherUseCase: WeatherUseCaseProtocol?
     var disposeBag: DisposeBag = .init()
     private let weather = BehaviorRelay<Weather?>(value: nil)
+    private let requestWeatherByCoordinator = PublishRelay<(String, String)>()
+    
+    private let locationManager: CLLocationManager
+    private lazy var isAuthorized: Bool = {
+        switch CLLocationManager.authorizationStatus() {
+            case .authorizedAlways, .authorizedWhenInUse, .authorized:
+                return true
+            case .notDetermined, .denied, .restricted:
+                return false
+            @unknown default:
+                return false
+            }
+    }()
+    
+    override init() {
+        self.locationManager = CLLocationManager()
+        super.init()
+        
+        self.locationManager.delegate = self
+    }
     
     func transform(_ input: Input) -> Output {
-        let conditionImage = BehaviorRelay<UIImage?>(value: nil)
-        let temperature = BehaviorRelay<String>(value: String())
-        let cityName = BehaviorRelay<String>(value: String())
+        let conditionImage = PublishRelay<UIImage>()
+        let temperature = PublishRelay<String>()
+        let cityName = PublishRelay<String>()
+        let requestLocation = PublishRelay<Void>()
+        
+        input.viewWillAppear
+            .bind(to: requestLocation)
+            .disposed(by: disposeBag)
+        
+        requestLocation
+            .withUnretained(self)
+            .bind { viewModel, _ in
+                viewModel.locationManager.requestWhenInUseAuthorization()
+                viewModel.locationManager.requestLocation()
+            }
+            .disposed(by: disposeBag)
         
         let requestWeather = Observable.merge(
             input.requestWeatherByText
                 .map { WeatherRequestMethod.text($0) },
-            input.requestWeatherByCoordinator
+            requestWeatherByCoordinator
                 .map { WeatherRequestMethod.coordinate(lat: $0.0, lon: $0.1) }
-            )
-        .withUnretained(self)
-        .skip(1)
-        .flatMap { viewModel, request in
-            viewModel.weatherUseCase?.weather(request).asResult() ?? .empty()
-        }.share()
+        )
+            .withUnretained(self)
+            .skip(1)
+            .filter { viewModel, _ in
+                viewModel.isAuthorized == true }
+            .flatMap { viewModel, request in
+                viewModel.weatherUseCase?.weather(request).asResult() ?? .empty()
+            }.share()
         
         requestWeather
             .compactMap { result -> Weather? in
@@ -64,17 +102,35 @@ class WeatherViewModel: ViewModelType {
         
         weather
             .compactMap(\.?.conditionName)
-            .map { UIImage(named: $0) }
+            .compactMap { UIImage(systemName: $0) }
             .bind(to: conditionImage)
             .disposed(by: disposeBag)
         
         return Output(
-            conditionImage: conditionImage.asDriver(),
-            temperature: temperature.asDriver(),
-            cityName: cityName.asDriver()
+            conditionImage: conditionImage.asDriver { _ in  .empty() },
+            temperature: temperature.asDriver { _ in  .empty() },
+            cityName: cityName.asDriver{ _ in  .empty() }
         )
     }
     
     let input = Input()
     lazy var output = transform(input)
+}
+
+// MARK: - CLLocationManagerDelegate
+
+extension WeatherViewModel : CLLocationManagerDelegate {
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        locationManager.stopUpdatingLocation()
+        let latString = "\(location.coordinate.latitude)"
+        let lonString = "\(location.coordinate.longitude)"
+        
+        requestWeatherByCoordinator.accept((latString, lonString))
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print(error)
+    }
 }
