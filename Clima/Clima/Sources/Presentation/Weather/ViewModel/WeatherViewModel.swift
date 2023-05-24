@@ -67,15 +67,6 @@ class WeatherViewModel: ViewModelType {
             .map { UIImage(named: $0) }
             .bind(to: conditionImage)
             .disposed(by: disposeBag)
-            
-        weather
-            .bind {
-                print("@@@@@@@@@@@@@@@@")
-                print($0)
-                print("@@@@@@@@@@@@@@@@")
-            }
-            .disposed(by: disposeBag)
-        
         
         return Output(
             conditionImage: conditionImage.asDriver(),
