@@ -10,6 +10,7 @@ import UIKit
 import RxSwift
 import RxCocoa
 import SnapKit
+import CoreLocation
 
 class WeatherViewController: UIViewController, ViewModelBindable {
     
@@ -28,6 +29,7 @@ class WeatherViewController: UIViewController, ViewModelBindable {
         }
         
         enum SearchStackView {
+            static let topMargin = 10
             static let horizontalMargin = 5
         }
         
@@ -160,6 +162,14 @@ class WeatherViewController: UIViewController, ViewModelBindable {
         return stackView
     }()
     
+    private let activityIndicator: UIActivityIndicatorView = {
+        let activityIndicator = UIActivityIndicatorView(frame: .zero)
+        activityIndicator.style = .large
+        activityIndicator.tintColor = .white
+        activityIndicator.backgroundColor = .black.withAlphaComponent(0.5)
+        activityIndicator.isHidden = true 
+        return activityIndicator
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -187,20 +197,55 @@ class WeatherViewController: UIViewController, ViewModelBindable {
             .disposed(by: disposeBag)
         
         searchButton.rx.tap
+            .do(onNext: { [weak self] _ in
+                self?.searchTextField.endEditing(true)
+            })
             .withLatestFrom(searchTextField.rx.text.orEmpty)
+            .filter { $0.isEmpty == false }
             .bind(to: viewModel.input.requestWeatherByText)
             .disposed(by: disposeBag)
         
         viewModel.output.cityName
             .drive(cityLabel.rx.text)
             .disposed(by: disposeBag)
-
+        
         viewModel.output.conditionImage
             .drive(conditionImageView.rx.image)
             .disposed(by: disposeBag)
-
+        
         viewModel.output.temperature
             .drive(temperatureLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        viewModel.output.showMoveToSettingAlert
+            .asObservable()
+            .flatMap { [weak self] _ in
+                self?.rx.presentAlert(
+                    title: "위치 권한 설정",
+                    message: "위치 정보 접근 권한 설정을 해주세요.",
+                    style: .withCancel
+                ) ?? .empty()
+            }
+            .filter { $0 == .confirm }
+            .map { _ in () }
+            .asDriver(onErrorJustReturn: ())
+            .drive(onNext: { _ in
+                UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
+            })
+            .disposed(by: disposeBag)
+        
+        viewModel.output.showLoadingView
+            .drive(onNext: { [weak self] _ in
+                self?.activityIndicator.isHidden = false
+                self?.activityIndicator.startAnimating()
+            })
+            .disposed(by: disposeBag)
+        
+        viewModel.output.dismissLoadingView
+            .drive(onNext: { [weak self] _ in
+                self?.activityIndicator.isHidden = true
+                self?.activityIndicator.stopAnimating()
+            })
             .disposed(by: disposeBag)
     }
     
@@ -221,7 +266,7 @@ class WeatherViewController: UIViewController, ViewModelBindable {
         }
         
         searchStackView.snp.makeConstraints { make in
-            make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
+            make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top).offset(Metric.SearchStackView.topMargin)
             make.left.right.equalToSuperview()
                 .inset(Metric.SearchStackView.horizontalMargin)
         }
@@ -237,6 +282,11 @@ class WeatherViewController: UIViewController, ViewModelBindable {
             make.width.height.equalTo(
                 Metric.WeatherImageView.width
             )
+        }
+        
+        self.view.addSubview(activityIndicator)
+        activityIndicator.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
     }
 }
