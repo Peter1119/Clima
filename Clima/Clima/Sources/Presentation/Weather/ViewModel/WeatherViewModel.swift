@@ -184,4 +184,17 @@ extension WeatherViewModel : CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(error.localizedDescription)
     }
+    
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        if #available(iOS 14.0, *) {
+            switch manager.authorizationStatus {
+            case .authorizedWhenInUse:
+                manager.requestLocation()
+            default:
+                return
+            }
+        } else {
+            return 
+        }
+    }
 }
