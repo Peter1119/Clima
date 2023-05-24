@@ -40,7 +40,7 @@ class WeatherViewController: UIViewController, ViewModelBindable {
 
         enum CenterStackView {
             static let horizontalMargin = 10
-            static let topMargin = 10
+            static let topMargin = 20
         }
     }
 
