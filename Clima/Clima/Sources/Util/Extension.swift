@@ -10,6 +10,51 @@ import UIKit
 import RxSwift
 import RxCocoa
 
+enum AlertStyle {
+    case onlyConfirm
+    case withCancel
+}
+
+enum ActionType {
+    case confirm
+    case cancel
+}
+
+extension Reactive where Base: UIViewController {
+    func presentAlert(
+        title : String? = nil,
+        message: String? = nil,
+        style: AlertStyle = .onlyConfirm) -> Observable<ActionType> {
+        return Observable.create { observer in
+            let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+            let okAction = UIAlertAction(title: "확인", style: .default) { _ in
+                observer.onNext(.confirm)
+                observer.onCompleted()
+            }
+            
+            let cancelAction = UIAlertAction(title: "취소", style: .destructive) { _ in
+                observer.onNext(.cancel)
+                observer.onCompleted()
+            }
+            
+            switch style {
+            case .onlyConfirm:
+                alertController.addAction(okAction)
+            case .withCancel:
+                alertController.addAction(cancelAction)
+                alertController.addAction(okAction)
+            }
+            
+            base.present(alertController, animated: true, completion: nil)
+            
+            return Disposables.create {
+                alertController.dismiss(animated: true, completion: nil)
+            }
+        }
+    }
+}
+
 extension ObservableType {
     func asResult() -> Observable<Result<Element, Error>> {
         return self.map { .success($0) }
