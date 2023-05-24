@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import CoreLocation
 import RxSwift
 import RxCocoa
 import SnapKit
@@ -161,32 +160,48 @@ class WeatherViewController: UIViewController, ViewModelBindable {
         return stackView
     }()
     
-    private let locationManager = CLLocationManager()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .systemBackground
-        locationManager.delegate = self
-        
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.requestLocation()
         
         layout()
     }
     
     func bindViewModel() {
+        self.rx.viewWillAppear
+            .map { _ in Void() }
+            .bind(to: viewModel.input.viewWillAppear)
+            .disposed(by: disposeBag)
         
-//        viewModel.output.cityName
-//            .drive(cityLabel.rx.text)
-//            .disposed(by: disposeBag)
-//
-//        viewModel.output.conditionImage
-//            .drive(conditionImageView.rx.image)
-//            .disposed(by: disposeBag)
-//
-//        viewModel.output.temperature
-//            .drive(temperatureLabel.rx.text)
-//            .disposed(by: disposeBag)
+        currentLocationButton.rx.tap
+            .bind(to: viewModel.input.requestCoordinatorButtonTap)
+            .disposed(by: disposeBag)
+        
+        currentLocationButton.rx.tap
+            .withUnretained(self)
+            .bind { weakSelf, _ in
+                weakSelf.searchTextField.text = String()
+                weakSelf.searchTextField.endEditing(true)
+            }
+            .disposed(by: disposeBag)
+        
+        searchButton.rx.tap
+            .withLatestFrom(searchTextField.rx.text.orEmpty)
+            .bind(to: viewModel.input.requestWeatherByText)
+            .disposed(by: disposeBag)
+        
+        viewModel.output.cityName
+            .drive(cityLabel.rx.text)
+            .disposed(by: disposeBag)
+
+        viewModel.output.conditionImage
+            .drive(conditionImageView.rx.image)
+            .disposed(by: disposeBag)
+
+        viewModel.output.temperature
+            .drive(temperatureLabel.rx.text)
+            .disposed(by: disposeBag)
     }
     
     // MARK: - Layout
@@ -226,20 +241,3 @@ class WeatherViewController: UIViewController, ViewModelBindable {
     }
 }
 
-// MARK: - CLLocationManagerDelegate
-
-extension WeatherViewController : CLLocationManagerDelegate {
-    
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.last else { return }
-        locationManager.stopUpdatingLocation()
-        let latString = "\(location.coordinate.latitude)"
-        let lonString = "\(location.coordinate.longitude)"
-        
-        viewModel.input.requestWeatherByCoordinator.accept((latString, lonString))
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print(error)
-    }
-}
