@@ -23,6 +23,7 @@ final class WeatherViewModel: NSObject, ViewModelType {
         let conditionImage: Driver<UIImage>
         let temperature: Driver<String>
         let cityName: Driver<String>
+        let showMoveToSettingAlert: Driver<Void>
     }
     
     var weatherUseCase: WeatherUseCaseProtocol?
@@ -31,16 +32,9 @@ final class WeatherViewModel: NSObject, ViewModelType {
     private let requestWeatherByCoordinator = PublishRelay<(String, String)>()
     
     private let locationManager: CLLocationManager
-    private lazy var isAuthorized: Bool = {
-        switch CLLocationManager.authorizationStatus() {
-            case .authorizedAlways, .authorizedWhenInUse, .authorized:
-                return true
-            case .notDetermined, .denied, .restricted:
-                return false
-            @unknown default:
-                return false
-            }
-    }()
+    private var authorizationIsDenied: Bool {
+        return CLLocationManager.authorizationStatus() == .denied
+    }
     
     override init() {
         self.locationManager = CLLocationManager()
@@ -53,33 +47,49 @@ final class WeatherViewModel: NSObject, ViewModelType {
         let conditionImage = PublishRelay<UIImage>()
         let temperature = PublishRelay<String>()
         let cityName = PublishRelay<String>()
-        let requestLocation = PublishRelay<Void>()
         
         input.viewWillAppear
-            .bind(to: requestLocation)
-            .disposed(by: disposeBag)
-        
-        requestLocation
             .withUnretained(self)
             .bind { viewModel, _ in
                 viewModel.locationManager.requestWhenInUseAuthorization()
-                viewModel.locationManager.requestLocation()
             }
             .disposed(by: disposeBag)
         
-        let requestWeather = Observable.merge(
-            input.requestWeatherByText
-                .map { WeatherRequestMethod.text($0) },
-            requestWeatherByCoordinator
-                .map { WeatherRequestMethod.coordinate(lat: $0.0, lon: $0.1) }
+        Observable.merge(
+            input.viewWillAppear.asObservable(),
+            input.requestCoordinatorButtonTap.asObservable()
+        )
+        .withUnretained(self)
+        .bind { viewModel, _ in
+            viewModel.locationManager.requestLocation()
+        }
+        .disposed(by: disposeBag)
+        
+        let authorizationIsDenied = Observable.merge(
+            input.requestWeatherByText.map { _ in () }.asObservable(),
+            input.requestCoordinatorButtonTap.asObservable()
         )
             .withUnretained(self)
-            .skip(1)
-            .filter { viewModel, _ in
-                viewModel.isAuthorized == true }
+            .map { viewModel, _ -> Bool in
+                return viewModel.authorizationIsDenied
+            }
+        
+        let requestWeather = authorizationIsDenied
+            .filter { $0 == false }
+            .withLatestFrom(
+                Observable.merge(
+                    input.requestWeatherByText.map { WeatherRequestMethod.text($0)
+                    },
+                    requestWeatherByCoordinator.map {
+                        WeatherRequestMethod.coordinate(lat: $0.0, lon: $0.1)
+                    }
+                )
+            )
+            .withUnretained(self)
             .flatMap { viewModel, request in
                 viewModel.weatherUseCase?.weather(request).asResult() ?? .empty()
-            }.share()
+            }
+            .share()
         
         requestWeather
             .compactMap { result -> Weather? in
@@ -109,7 +119,11 @@ final class WeatherViewModel: NSObject, ViewModelType {
         return Output(
             conditionImage: conditionImage.asDriver { _ in  .empty() },
             temperature: temperature.asDriver { _ in  .empty() },
-            cityName: cityName.asDriver{ _ in  .empty() }
+            cityName: cityName.asDriver{ _ in  .empty() },
+            showMoveToSettingAlert: authorizationIsDenied
+                .filter { $0 == true }
+                .map { _ in () }
+                .asDriver(onErrorJustReturn: ())
         )
     }
     
@@ -131,6 +145,6 @@ extension WeatherViewModel : CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print(error)
+        print(error.localizedDescription)
     }
 }

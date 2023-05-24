@@ -10,6 +10,7 @@ import UIKit
 import RxSwift
 import RxCocoa
 import SnapKit
+import CoreLocation
 
 class WeatherViewController: UIViewController, ViewModelBindable {
     
@@ -194,13 +195,30 @@ class WeatherViewController: UIViewController, ViewModelBindable {
         viewModel.output.cityName
             .drive(cityLabel.rx.text)
             .disposed(by: disposeBag)
-
+        
         viewModel.output.conditionImage
             .drive(conditionImageView.rx.image)
             .disposed(by: disposeBag)
-
+        
         viewModel.output.temperature
             .drive(temperatureLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        viewModel.output.showMoveToSettingAlert
+            .asObservable()
+            .flatMap { [weak self] _ in
+                self?.rx.presentAlert(
+                    title: "위치 권한 설정",
+                    message: "위치 정보 접근 권한 설정을 해주세요.",
+                    style: .withCancel
+                ) ?? .empty()
+            }
+            .filter { $0 == .confirm }
+            .map { _ in () }
+            .asDriver(onErrorJustReturn: ())
+            .drive(onNext: { _ in
+                UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
+            })
             .disposed(by: disposeBag)
     }
     
