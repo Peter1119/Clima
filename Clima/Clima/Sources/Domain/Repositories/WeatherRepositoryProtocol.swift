@@ -7,12 +7,12 @@
 //
 
 import Foundation
-
+import CoreLocation
 import RxSwift
 
 enum WeatherRequestMethod {
     case text(_ input: String)
-    case coordinate(lat: String, lon: String)
+    case coordinate(_ location: CLLocation)
 }
 
 extension WeatherRequestMethod {
@@ -20,9 +20,9 @@ extension WeatherRequestMethod {
         switch self {
         case .text(let text):
             return ["q": text]
-        case .coordinate(let lat, let lon):
-            return ["lat": lat,
-                    "lon": lon]
+        case .coordinate(let location):
+            return ["lat": "\(location.coordinate.latitude)",
+                    "lon": "\(location.coordinate.longitude)"]
         }
     }
 }
