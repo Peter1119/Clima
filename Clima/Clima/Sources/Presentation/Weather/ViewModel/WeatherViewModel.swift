@@ -24,6 +24,7 @@ final class WeatherViewModel: NSObject, ViewModelType {
         let temperature: Driver<String>
         let cityName: Driver<String>
         let showMoveToSettingAlert: Driver<Void>
+        let showErrorAlert: Driver<String>
         let showLoadingView: Driver<Void>
         let dismissLoadingView: Driver<Void>
     }
@@ -44,6 +45,7 @@ final class WeatherViewModel: NSObject, ViewModelType {
         let conditionImage = PublishRelay<UIImage>()
         let temperature = PublishRelay<String>()
         let cityName = PublishRelay<String>()
+        let showErrorAlert = PublishRelay<String>()
         
         // MARK: - view will appear 요청
         input.viewWillAppear
@@ -107,7 +109,6 @@ final class WeatherViewModel: NSObject, ViewModelType {
             }
             .share()
         
-        
         let responseWeather = Observable.merge(
             requestWeatherViewWillAppear,
             requestWeatherByCurrentLocation,
@@ -121,6 +122,14 @@ final class WeatherViewModel: NSObject, ViewModelType {
                 return weather
             }
             .bind(to: weather)
+            .disposed(by: disposeBag)
+        
+        responseWeather
+            .compactMap { result -> String? in
+                guard case .failure = result else { return nil }
+                return "알 수 없는 문제가 발생했습니다."
+            }
+            .bind(to: showErrorAlert)
             .disposed(by: disposeBag)
         
         // MARK: - view에 필요한 항목으로 변환
@@ -168,7 +177,8 @@ final class WeatherViewModel: NSObject, ViewModelType {
         let dismissLoadingView =
         Observable.merge(
             showMoveToSettingAlert,
-            responseWeather.map { _ in () }
+            responseWeather.map { _ in () },
+            showErrorAlert.map { _ in () }
         )
         
         
@@ -177,6 +187,7 @@ final class WeatherViewModel: NSObject, ViewModelType {
             temperature: temperature.asDriver { _ in  .empty() },
             cityName: cityName.asDriver{ _ in  .empty() },
             showMoveToSettingAlert: showMoveToSettingAlert.asDriver(onErrorJustReturn: ()),
+            showErrorAlert: showErrorAlert.asDriver(onErrorJustReturn: String()),
             showLoadingView: showLoadingView.asDriver(onErrorJustReturn: ()),
             dismissLoadingView: dismissLoadingView.asDriver(onErrorJustReturn: ())
         )

@@ -251,6 +251,11 @@ class WeatherViewController: UIViewController, ViewModelBindable {
                 self?.activityIndicator.stopAnimating()
             })
             .disposed(by: disposeBag)
+        
+        viewModel.output.showErrorAlert
+            .drive(rx.presentErrorAlert)
+            .disposed(by: disposeBag)
+            
     }
     
     // MARK: - Layout

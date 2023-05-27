@@ -53,6 +53,17 @@ extension Reactive where Base: UIViewController {
             }
         }
     }
+    
+    var presentErrorAlert: Binder<String> {
+        return Binder(base) { base, message in
+            let alertController = UIAlertController(title: "문제가 발생했어요.", message: message, preferredStyle: .alert)
+            let action = UIAlertAction(title: "확인", style: .default, handler: nil)
+            
+            alertController.addAction(action)
+            
+            base.present(alertController, animated: true, completion: nil)
+        }
+    }
 }
 
 extension ObservableType {
