@@ -26,6 +26,7 @@ extension WeatherRequestMethod {
         }
     }
 }
+
 protocol WeatherRepositoryProtocol {
     func fetch(_ requestMethod: WeatherRequestMethod) -> Observable<Weather>
 }
