@@ -30,7 +30,7 @@ final class WeatherViewModel: NSObject, ViewModelType {
     
     var weatherUseCase: WeatherUseCaseProtocol?
     var disposeBag: DisposeBag = .init()
-    private let weather = BehaviorRelay<Weather?>(value: nil)
+    private let weather = PublishRelay<Weather?>()
     private let requestWeatherByCoordinator = PublishRelay<(String, String)>()
     
     private let locationManager: CLLocationManager
@@ -44,9 +44,6 @@ final class WeatherViewModel: NSObject, ViewModelType {
         let conditionImage = PublishRelay<UIImage>()
         let temperature = PublishRelay<String>()
         let cityName = PublishRelay<String>()
-        let showMoveToSettingAlert = PublishRelay<Void>()
-        let showLoadingView = PublishRelay<Void>()
-        let dismissLoadingView = PublishRelay<Void>()
         
         input.viewWillAppear
             .withUnretained(self)
@@ -99,25 +96,23 @@ final class WeatherViewModel: NSObject, ViewModelType {
             }
             .share()
         
-        Observable.merge(
-            requestWeatherViewWillAppear,
-            requestWeatherByCurrentLocation
-        )
-            .compactMap { result -> Weather? in
-                guard case let .success(weather) = result else { return nil }
-                return weather
-            }
-            .bind(to: weather)
-            .disposed(by: disposeBag)
-        
-        input.requestWeatherByText
-            .map { location in
-                WeatherRequestMethod.text(location)
-            }
+        let requestWeatherByText =  input.requestWeatherByText
+            .map(WeatherRequestMethod.text)
             .withUnretained(self)
             .flatMap { viewModel, request in
                 viewModel.weatherUseCase?.weather(request).asResult() ?? .empty()
             }
+            .share()
+        
+        
+        let responseWeather = Observable.merge(
+            requestWeatherViewWillAppear,
+            requestWeatherByCurrentLocation,
+            requestWeatherByText
+        )
+            .share()
+        
+        responseWeather
             .compactMap { result -> Weather? in
                 guard case let .success(weather) = result else { return nil }
                 return weather
@@ -160,16 +155,18 @@ final class WeatherViewModel: NSObject, ViewModelType {
             .share()
         
         // LoadingView
-//        let showLoadingView = Observable.merge(
-//            input.viewWillAppear.asObservable(),
-//            input.requestCoordinatorButtonTap.asObservable(),
-//            input.requestWeatherByText.map { _ in () }.asObservable()
-//        )
-//
-//        let dismissLoadingView = Observable.merge(
-//            viewWillAppearSuccess,
-//            requestWeatherSuccess
-//        ).map { _ in () }
+        let showLoadingView = Observable.merge(
+            input.viewWillAppear.asObservable(),
+            input.requestCoordinatorButtonTap.asObservable(),
+            input.requestWeatherByText.map { _ in () }.asObservable()
+        )
+        
+        let dismissLoadingView =
+        Observable.merge(
+            showMoveToSettingAlert,
+            responseWeather.map { _ in () }
+        )
+        
         
         return Output(
             conditionImage: conditionImage.asDriver { _ in  .empty() },
