@@ -34,9 +34,6 @@ final class WeatherViewModel: NSObject, ViewModelType {
     private let requestWeatherByCoordinator = PublishRelay<(String, String)>()
     
     private let locationManager: CLLocationManager
-    private var authorizationIsDenied: Bool {
-        return CLLocationManager.authorizationStatus() == .denied
-    }
     
     override init() {
         self.locationManager = CLLocationManager()
@@ -57,8 +54,19 @@ final class WeatherViewModel: NSObject, ViewModelType {
                 viewModel.locationManager.requestWhenInUseAuthorization()
             }
             .disposed(by: disposeBag)
-    
-        let requestWeatherViewWillAppear = input.viewWillAppear
+        
+        let requestWeatherViewWillAppear = Observable.combineLatest(
+            input.viewWillAppear,
+            locationManager.rx.authorizationStatus
+        )
+            .filter { _, status -> Bool in
+                switch status {
+                case .notDetermined, .denied, .restricted:
+                    return false
+                default:
+                    return true
+                }
+            }
             .withUnretained(self)
             .flatMap { viewModel, _ -> Observable<CLLocation> in
                 viewModel.locationManager.rx.locationUpdates
@@ -71,6 +79,15 @@ final class WeatherViewModel: NSObject, ViewModelType {
             .share()
         
         let requestWeatherByCurrentLocation = input.requestCoordinatorButtonTap
+            .withLatestFrom(locationManager.rx.authorizationStatus)
+            .filter { status -> Bool in
+                switch status {
+                case .notDetermined, .denied, .restricted:
+                    return false
+                default:
+                    return true
+                }
+            }
             .withUnretained(self)
             .flatMap { viewModel, _ -> Observable<CLLocation> in
                 viewModel.locationManager.rx.locationUpdates
@@ -124,6 +141,23 @@ final class WeatherViewModel: NSObject, ViewModelType {
             .compactMap { UIImage(systemName: $0) }
             .bind(to: conditionImage)
             .disposed(by: disposeBag)
+        
+        // show Setting Alert
+        let showMoveToSettingAlert = Observable.merge(
+            input.viewWillAppear.asObservable(),
+            input.requestCoordinatorButtonTap.asObservable()
+        )
+            .withLatestFrom(locationManager.rx.authorizationStatus)
+            .filter { status -> Bool in
+                switch status {
+                case .notDetermined, .denied, .restricted:
+                    return true
+                default:
+                    return false
+                }
+            }
+            .map { _ in () }
+            .share()
         
         // LoadingView
 //        let showLoadingView = Observable.merge(
