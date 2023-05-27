@@ -45,6 +45,7 @@ final class WeatherViewModel: NSObject, ViewModelType {
         let temperature = PublishRelay<String>()
         let cityName = PublishRelay<String>()
         
+        // MARK: - view will appear 요청
         input.viewWillAppear
             .withUnretained(self)
             .bind { viewModel, _ in
@@ -75,6 +76,7 @@ final class WeatherViewModel: NSObject, ViewModelType {
             }
             .share()
         
+        // MARK: - 현재 위치 정보 버튼
         let requestWeatherByCurrentLocation = input.requestCoordinatorButtonTap
             .withLatestFrom(locationManager.rx.authorizationStatus)
             .filter { status -> Bool in
@@ -96,6 +98,7 @@ final class WeatherViewModel: NSObject, ViewModelType {
             }
             .share()
         
+        // MARK: - 도시 명 검색
         let requestWeatherByText =  input.requestWeatherByText
             .map(WeatherRequestMethod.text)
             .withUnretained(self)
@@ -120,6 +123,7 @@ final class WeatherViewModel: NSObject, ViewModelType {
             .bind(to: weather)
             .disposed(by: disposeBag)
         
+        // MARK: - view에 필요한 항목으로 변환
         weather
             .compactMap(\.?.cityName)
             .bind(to: cityName)
