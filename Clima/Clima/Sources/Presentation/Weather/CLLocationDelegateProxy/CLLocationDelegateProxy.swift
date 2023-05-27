@@ -15,6 +15,7 @@ class CLLocationManagerDelegateProxy: DelegateProxy<CLLocationManager, CLLocatio
     
     weak private(set) var locationManager: CLLocationManager?
     private let locationSubject = PublishSubject<CLLocation>()
+    private let statusSubject = PublishSubject<CLAuthorizationStatus>()
     
     init(locationManager: ParentObject) {
         self.locationManager = locationManager
@@ -48,15 +49,30 @@ class CLLocationManagerDelegateProxy: DelegateProxy<CLLocationManager, CLLocatio
         locationManager?.requestLocation()
         return locationSubject.asObservable()
     }
+    
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        if let status = locationManager?.authorizationStatus {
+            statusSubject.onNext(status)
+        }
+    }
+    
+    // Observable로 변환된 이벤트를 구독할 수 있는 Observable을 반환하는 메서드입니다.
+    func observeAuthorizationStatus() -> Observable<CLAuthorizationStatus> {
+        return statusSubject.asObservable()
+    }
 }
 
 extension Reactive where Base: CLLocationManager {
     var delegate: CLLocationManagerDelegateProxy {
         return CLLocationManagerDelegateProxy.proxy(for: base)
     }
-
+    
     var locationUpdates: Observable<CLLocation> {
         return delegate.requestLocation()
+    }
+    
+    var authorizationStatus: Observable<CLAuthorizationStatus> {
+        return delegate.observeAuthorizationStatus()
     }
 }
 
