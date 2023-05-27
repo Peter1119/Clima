@@ -226,6 +226,10 @@ class WeatherViewController: UIViewController, ViewModelBindable {
                     style: .withCancel
                 ) ?? .empty()
             }
+            .do(onNext: { [weak self] _ in 
+                self?.activityIndicator.isHidden = true
+                self?.activityIndicator.stopAnimating()
+            })
             .filter { $0 == .confirm }
             .map { _ in () }
             .asDriver(onErrorJustReturn: ())
