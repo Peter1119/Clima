@@ -57,13 +57,45 @@ final class WeatherViewModel: NSObject, ViewModelType {
                 viewModel.locationManager.requestWhenInUseAuthorization()
             }
             .disposed(by: disposeBag)
-        
-        input.viewWillAppear
-            .flatMap { _ in
-                self.locationManager.rx.locationUpdates
+    
+        let requestWeatherViewWillAppear = input.viewWillAppear
+            .withUnretained(self)
+            .flatMap { viewModel, _ -> Observable<CLLocation> in
+                viewModel.locationManager.rx.locationUpdates
             }
+            .map(WeatherRequestMethod.coordinate)
+            .withUnretained(self)
+            .flatMap { viewModel, request in
+                viewModel.weatherUseCase?.weather(request).asResult() ?? .empty()
+            }
+            .share()
+        
+        let requestWeatherByCurrentLocation = input.requestCoordinatorButtonTap
+            .withUnretained(self)
+            .flatMap { viewModel, _ -> Observable<CLLocation> in
+                viewModel.locationManager.rx.locationUpdates
+            }
+            .map(WeatherRequestMethod.coordinate)
+            .withUnretained(self)
+            .flatMap { viewModel, request in
+                viewModel.weatherUseCase?.weather(request).asResult() ?? .empty()
+            }
+            .share()
+        
+        Observable.merge(
+            requestWeatherViewWillAppear,
+            requestWeatherByCurrentLocation
+        )
+            .compactMap { result -> Weather? in
+                guard case let .success(weather) = result else { return nil }
+                return weather
+            }
+            .bind(to: weather)
+            .disposed(by: disposeBag)
+        
+        input.requestWeatherByText
             .map { location in
-                WeatherRequestMethod.coordinate(location)
+                WeatherRequestMethod.text(location)
             }
             .withUnretained(self)
             .flatMap { viewModel, request in
